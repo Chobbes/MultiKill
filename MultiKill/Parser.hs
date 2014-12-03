@@ -36,20 +36,23 @@ import Prelude hiding (takeWhile)
 parseModel :: Parser Model
 parseModel = do string "m:"
                 tps <- decimal
-                skipToEndOfLine
+                endOfLine'
                 
                 timeInterval <- parseTimeInterval
-                skipToEndOfLine
+                endOfLine'
                 
                 string "r:"
                 r <- decimal
-                skipToEndOfLine
+                endOfLine'
                 
                 string "DIM:"
                 dim <- decimal
-                
-                feats <- many parseKeyInt
-                
+                endOfLine'
+
+                feats <-  many parseKeyWeight
+                many endOfLine'
+                endOfInput <?> "End of input not reached. Probably some bad padding at the end, or bad features."
+
                 return (Model tps timeInterval r dim feats)
 
 -- | Parse the comma separated time points for the interval.
@@ -59,18 +62,14 @@ parseTimeInterval =
      others <- (do char ',' *> parseTimeInterval) <|> (return [])
      return (point : others)
 
--- | Parse a key:int pair for model weights.
-parseKeyInt :: Parser (Integer, Double)
-parseKeyInt = do key <- decimal
-                 char ':'
-                 value <- double
-                 skipToEndOfLine
-                 return (key, value)
+-- | Parse a key:double pair for model weights.
+parseKeyWeight :: Parser (Integer, Double)
+parseKeyWeight = do key <- decimal
+                    char ':'
+                    value <- double
+                    endOfLine'
+                    return (key, value)
 
 -- | Newline parser to handle all sorts of horrible.
 endOfLine' :: Parser ()
-endOfLine' = endOfLine <|> endOfInput <|> (char '\r' *> return ())
-
--- | Skip to the next line...
-skipToEndOfLine :: Parser ()
-skipToEndOfLine = takeWhile (\c -> c /= '\n' && c /= '\r') >> endOfLine'
+endOfLine' = endOfLine <|> (char '\r' *> return ())
