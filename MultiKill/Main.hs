@@ -31,9 +31,10 @@ import System.Environment
 
 main = do (outputFileName:fileNames) <- getArgs
           modelFiles <- mapM T.readFile fileNames
-          print "blah"
+          let models = map (takeRight . parseOnly parseModel) modelFiles
+          writeFile outputFileName (show $ modelAverage models)
   where takeRight (Right a) = a
-        takeRight _ = error "Could not parse model!"
+        takeRight (Left err) = error ("Could not parse model!\n" ++ err)
 
 modelAverage :: [Model] -> Model
 modelAverage models = (head models) {features = map avg keys}

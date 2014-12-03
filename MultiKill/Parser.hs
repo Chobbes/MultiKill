@@ -49,9 +49,6 @@ parseModel = do string "m:"
                 dim <- decimal
                 
                 feats <- many parseKeyInt
-
-                skipSpace
-                endOfInput
                 
                 return (Model tps timeInterval r dim feats)
 
