@@ -32,16 +32,44 @@ import Data.Attoparsec.Text
 import Data.Maybe
 import Prelude hiding (takeWhile)
 
+
 -- | Parse PSSP model.
 parseModel :: Parser Model
 parseModel = do string "m:"
                 tps <- decimal
-                undefined
+                skipToEndOfLine
+                
+                timeInterval <- parseTimeInterval
+                skipToEndOfLine
+                
+                string "r:"
+                r <- decimal
+                skipToEndOfLine
+                
+                string "DIM:"
+                dim <- decimal
+                
+                feats <- many parseKeyInt
 
--- | Parse a key:int pair
-parseKeyInt :: Parser Integer
-parseKeyInt = do undefined
-                 undefined
+                skipSpaces
+                endOfInput
+                
+                return (Model tps timeInterval r dim feats)
+
+-- | Parse the comma separated time points for the interval.
+parseTimeInterval :: Parser [Double]
+parseTimeInterval = 
+  do point <- double
+     others <- (do char ',' *> parseTimeInterval) <|> (return [])
+     return (point : others)
+
+-- | Parse a key:int pair for model weights.
+parseKeyInt :: Parser (Integer, Dobule)
+parseKeyInt = do key <- decimal
+                 char ':'
+                 value <- double
+                 skipToEndOfLine
+                 return (key, value)
 
 -- | Newline parser to handle all sorts of horrible.
 endOfLine' :: Parser ()
