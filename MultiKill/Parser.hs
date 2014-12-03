@@ -50,7 +50,7 @@ parseModel = do string "m:"
                 
                 feats <- many parseKeyInt
 
-                skipSpaces
+                skipSpace
                 endOfInput
                 
                 return (Model tps timeInterval r dim feats)
@@ -63,7 +63,7 @@ parseTimeInterval =
      return (point : others)
 
 -- | Parse a key:int pair for model weights.
-parseKeyInt :: Parser (Integer, Dobule)
+parseKeyInt :: Parser (Integer, Double)
 parseKeyInt = do key <- decimal
                  char ':'
                  value <- double
