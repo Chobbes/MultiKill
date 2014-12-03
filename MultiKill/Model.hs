@@ -38,7 +38,7 @@ data Model = Model { numTimePoints :: Integer -- ^ Number of time points in the 
 instance Show Model where
   show model = intercalate "\n" [numTimes, times, r, dim, feats]
     where numTimes = "m:" ++ show (numTimePoints model)
-          times = intercalate "," (map show timePoints)
+          times = intercalate "," (map show $ timePoints model)
           r = "r:" ++ show (rForSomeReason model)
           dim = "DIM:" ++ show (dimension model)
           feats = intercalate "\n" $ map (\(f,v) -> show f ++ ":" ++ show v) (features model)
