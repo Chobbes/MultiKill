@@ -29,7 +29,6 @@ import MultiKill.Model
 
 import Control.Applicative
 import Data.Attoparsec.Text
-import Data.Maybe
 import Prelude hiding (takeWhile)
 
 
