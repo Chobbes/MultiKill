@@ -28,8 +28,9 @@ import Data.Attoparsec.Text hiding (take)
 import Data.List
 import Data.Maybe
 import qualified Data.Text.IO as T
-import System.Environment
 import System.Directory
+import System.Environment
+import System.FilePath
 import System.Random
 
 
@@ -42,6 +43,7 @@ main = do (numStr:outputFileName:fileNames) <- getArgs
           gen <- getStdGen
           let models = takeRandom gen num allModels
 
+          createDirectoryIfMissing True (takeDirectory outputFileName)
           writeFile outputFileName (show $ modelAverage models)
   where takeRight (Right a) = a
         takeRight (Left err) = error ("Could not parse model!\n" ++ err)
