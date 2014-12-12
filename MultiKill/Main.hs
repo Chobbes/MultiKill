@@ -24,14 +24,24 @@
 import MultiKill.Model
 import MultiKill.Parser
 
-import Data.Attoparsec.Text
+import Data.Attoparsec.Text hiding (take)
+import Data.List
 import Data.Maybe
 import qualified Data.Text.IO as T
 import System.Environment
+import System.Directory
+import System.Random
 
-main = do (outputFileName:fileNames) <- getArgs
+
+main = do (numStr:outputFileName:fileNames) <- getArgs
+          let num = read numStr
+
           modelFiles <- mapM T.readFile fileNames
-          let models = map (takeRight . parseOnly parseModel) modelFiles
+          let allModels = map (takeRight . parseOnly parseModel) modelFiles
+          
+          gen <- getStdGen
+          let models = takeRandom gen num allModels
+
           writeFile outputFileName (show $ modelAverage models)
   where takeRight (Right a) = a
         takeRight (Left err) = error ("Could not parse model!\n" ++ err)
@@ -41,3 +51,13 @@ modelAverage models = (head models) {features = map avg keys}
   where feats = map features models
         keys = map fst (head feats)
         avg key = (key, (sum . catMaybes $ map (lookup key) feats) / (fromIntegral $ length models))
+
+takeRandom :: RandomGen g => g -> Int -> [a] -> [a]
+takeRandom _ 0 _ = []
+takeRandom _ _ [] = error "Called on empty list!"
+takeRandom gen num xs
+         | num > length xs = error "Out of range!"
+         | otherwise = value : (takeRandom newGen (num - 1) rest)
+  where (index, newGen) = randomR (0, (length xs) - 1) gen
+        (start, value, end) = (take index xs, xs !! index, drop (index + 1) xs)
+        rest = start ++ end
